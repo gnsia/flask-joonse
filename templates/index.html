@@ -7,21 +7,23 @@
 
     <!-- Google font -->
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Song+Myung&display=swap" rel="stylesheet">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 
     <style>
-      * {
-            font-family: 'Nanum Gothic', sans-serif;
-        }
+      * {}
+
       .wrap {
-            width: 900px;
-            margin: 10px auto;
+            width: auto;
+            margin: 2% 10%;
         }
       .jumbotron {
+            font-family: 'Song Myung', serif;
+
             margin: 10px auto 30px auto;
-            width:500px;
+            width: 100%;
 
             border: 1px solid black;
             border-radius: 5px;
@@ -34,6 +36,7 @@
         }
 
       .card {
+            font-family: 'Nanum Gothic', sans-serif;
             margin-bottom: 30px;
         }
 
@@ -63,24 +66,25 @@
           data: {},
           success: function (response) {
             let posts = response["posts"];
-            console.log(posts);
+            // console.log(posts);
             for (let i = 0; i < posts.length; i++) {
-              makeCard(posts[i]["title"], posts[i]["description"]);
+              // idx = posts[i]['_id'].toString()
+              showCard(posts[i]["title"], posts[i]["description"]);
             }
           }
         })
       }
 
       // 읽기 3총사 셋째 - 카드폼 만들기
-      function makeCard(title, description) {
+      function showCard(title, description) {
         let tempHtml =
             `<div class="col-sm-6">
               <div class="card">
                 <div class="card-body">
-                  <h5 class="card-title">${title}</h5>
-                  <p class="card-text">${description}</p>
-                  <a class="btn btn-primary" onclick="update()">수정</a>
-                  <a class="btn btn-primary" onclick="delete()">삭제</a>
+                  <h5 class="card-title" id="${title}">${title}</h5>
+                  <p class="card-text" id="${description}">${description}</p>
+                  <a class="btn btn-primary" id="${title}" onclick="editCard('${title}','${description}')">수정</a>
+                  <a class="btn btn-primary" onclick="deleteCard('${title}')">삭제</a>
                 </div>
               </div>
             </div>`;
@@ -88,7 +92,7 @@
       }
 
       // 글 작성
-      function create() {
+      function createCard() {
            let formTitle = $("#form-title").val();
            let formDescription = $("#form-description").val();
 
@@ -109,46 +113,69 @@
        }
 
        // 글 수정
-       // function update() {
-       //      let formTitle = $("#form-title").val();
-       //      let formDescription = $("#form-description").val();
-       //
-       //      $.ajax({
-       //          type: "POST",
-       //          url: "/update",
-       //          data: {title_give: formTitle,
-       //            description_give: formDescription},
-       //          success: function (response) {
-       //              if (response["result"] == "success") {
-       //                  alert("저장 완료!");
-       //                  window.location.reload();
-       //              } else {
-       //                  alert("오류 입니다!")
-       //              }
-       //          }
-       //      })
-       //  }
+       function editCard(title, description) {
+
+            // 카드 타이틀 -> 카드 폼
+           let editTitle = `<input name="form-title" type="text" class="form-control" id="edit-form-title" value="${title}">`;
+
+           let replaceTitle = `h5#${title}`
+
+
+           // 카드 내용 -> 내용 폼
+           let editDescription = `<textarea name="form-description" class="form-control" id="edit-form-description" rows="1">${description}</textarea>`;
+
+           let replaceDescription = `p#${description}`
+
+           // 카드 수정 버튼 -> 완료 버튼
+           let editButton = `<a class="btn btn-primary" role="button" onclick="updateCard('${title}')">완료</a>`;
+
+           let replaceButton = `a#${title}`
+
+           $(replaceTitle).replaceWith(editTitle);
+           $(replaceDescription).replaceWith(editDescription)
+           $(replaceButton).replaceWith(editButton)
+        }
+
+        // 글 수정된거 업데이트
+        function updateCard(title) {
+            let beforeTitle = title
+             let formTitle = $("#edit-form-title").val();
+             let formDescription = $("#edit-form-description").val();
+
+             $.ajax({
+                 type: "POST",
+                 url: "/update",
+                 data: {beforeTitle_give : beforeTitle,
+                   title_give: formTitle,
+                   description_give: formDescription},
+                 success: function (response) {
+                     if (response["result"] == "success") {
+                         alert("수정 완료!");
+                         window.location.reload();
+                     } else {
+                         alert("오류 입니다!")
+                     }
+                 }
+             })
+         }
+
 
         // 글 삭제
-        // function delete() {
-        //      let formTitle = $("#form-title").val();
-        //      let formDescription = $("#form-description").val();
-        //
-        //      $.ajax({
-        //          type: "POST",
-        //          url: "/delete",
-        //          data: {title_give: formTitle,
-        //            description_give: formDescription},
-        //          success: function (response) {
-        //              if (response["result"] == "success") {
-        //                  alert("삭제 완료!");
-        //                  window.location.reload();
-        //              } else {
-        //                  alert("오류 입니다!")
-        //              }
-        //          }
-        //      })
-        //  }
+        function deleteCard(title) {
+             $.ajax({
+                 type: "POST",
+                 url: "/delete",
+                 data: {title_give: title},
+                 success: function (response) {
+                     if (response["result"] == "success") {
+                         alert("삭제 완료!");
+                         window.location.reload();
+                     } else {
+                         alert("오류 입니다!")
+                     }
+                 }
+             })
+         }
 
     </script>
 
@@ -167,15 +194,14 @@
         <div class="form-group">
           <textarea name="form-description" class="form-control" id="form-description" rows="3" placeholder="내용"></textarea>
         </div>
-        <a class="btn btn-primary btn-lg" role="button" onclick="create()">저장하기</a>
+        <a class="btn btn-primary btn-lg" role="button" onclick="createCard()">저장하기</a>
       </div>
 
       <!-- Card -->
       <div id="cards-box" class="row">
 
         <!-- 1card -->
-
-        <div class="col-sm-6">
+        <!-- <div class="col-sm-6">
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">이글의 제목입니다.</h5>
@@ -184,7 +210,7 @@
               <a class="btn btn-primary" onclick="delete()">삭제</a>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- 2card -->
         <!-- <div class="col-sm-6">
